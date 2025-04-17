@@ -21,6 +21,35 @@ This decomposition is useful for:
 - Matrix inversion
 - And more!
 
+## Implementation Details
+
+The repository consists of two main modules:
+
+### LU Module (`LU.py`)
+
+The core implementation of LU decomposition with partial pivoting:
+
+- **lu_piv**: Main function that performs LU decomposition with partial pivoting
+  - Takes a matrix A and returns P, L, U such that PA = LU
+  - Includes optional display of intermediate steps
+  - Uses efficient NumPy operations for vectorized computation
+  - Implements numerical stability checks with appropriate tolerances
+
+- **find_pivot**: Helper function that finds the position of the maximum element for pivoting
+  - Ensures numerical stability of the decomposition
+
+- **verify_decomposition**: Function to validate the correctness of the decomposition
+  - Computes ||PA - LU|| as a verification measure
+
+The implementation uses several advanced NumPy operations for efficiency:
+- Vectorized computations instead of explicit loops
+- Outer product operations for submatrix updates
+- Direct row swapping using advanced indexing
+
+### Examples and Visualization (`run_examples.py`)
+
+The script that demonstrates the LU decomposition on various test matrices:
+
 ## Usage
 
 Run the examples with:
