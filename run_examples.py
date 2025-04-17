@@ -1,4 +1,5 @@
 import numpy as np
+import argparse
 from LU import lu_piv, verify_decomposition
 
 def print_matrix(matrix, name, precision=4):
@@ -25,8 +26,21 @@ def print_step_matrices(L, U, P, A, step):
     print("-"*50)
     input("Press Enter to continue to the next step...")
 
-def run_example(A, name="Example", display=True):
-    """Run LU decomposition on the given matrix and verify the result."""
+def print_final_result(L, U, P, A, step):
+    """Print only the final matrices without waiting for user input."""
+    # This function doesn't print anything during steps
+    # The final result will be printed by run_example
+    pass
+
+def run_example(A, name="Example", display=True, interactive=False):
+    """Run LU decomposition on the given matrix and verify the result.
+    
+    Args:
+        A: Input matrix
+        name: Example name
+        display: Whether to display intermediate steps
+        interactive: If True, use interactive print function with user prompts
+    """
     print(f"\n{'#'*60}")
     print(f"# {name}")
     print(f"{'#'*60}")
@@ -34,8 +48,11 @@ def run_example(A, name="Example", display=True):
     print("Original matrix:")
     print_matrix(A, "A")
     
+    # Choose the appropriate print function based on interactive mode
+    print_func = print_step_matrices if interactive else print_final_result
+    
     # Run LU decomposition
-    P, L, U = lu_piv(A, disp=1 if display else 0, print_step_func=print_step_matrices)
+    P, L, U = lu_piv(A, disp=1 if display else 0, print_step_func=print_func)
     
     # Print final results
     print("\nFinal decomposition:")
@@ -100,32 +117,116 @@ for i in range(n):
     if i < n-1:
         A5[i, i+1] = -1
 
+# Example 6: A large banded matrix - testing performance with bigger matrices
+def create_large_banded_matrix(n, bandwidth=5):
+    """Create a large banded matrix with the given bandwidth.
+    
+    Creates an n×n matrix with non-zero elements within a band around the diagonal.
+    The matrix has interesting values that ensure it's not singular.
+    """
+    large_matrix = np.zeros((n, n))
+    for i in range(n):
+        large_matrix[i, i] = 4.0  # Main diagonal
+        
+        # Fill bands above the main diagonal
+        for k in range(1, bandwidth + 1):
+            if i + k < n:
+                large_matrix[i, i + k] = 1.0 / (k + 1)  # Decreasing values away from diagonal
+        
+        # Fill bands below the main diagonal
+        for k in range(1, bandwidth + 1):
+            if i - k >= 0:
+                large_matrix[i, i - k] = -0.5 / (k + 1)  # Negative decreasing values
+                
+    return large_matrix
+
+# Create a 50x50 matrix with bandwidth 5
+A6 = create_large_banded_matrix(50, bandwidth=5)
+
+# Example 7: Toeplitz matrix - matrices with constant diagonals
+def create_toeplitz_matrix(n):
+    """Create a Toeplitz matrix of size n×n.
+    
+    A Toeplitz matrix has constant values along all diagonals.
+    These matrices arise in signal processing and differential equations.
+    """
+    toeplitz = np.zeros((n, n))
+    
+    # Fill the matrix with values that depend only on the difference i-j
+    for i in range(n):
+        for j in range(n):
+            # Main diagonal is 2, and values decrease as we move away
+            diagonal_index = i - j
+            if diagonal_index == 0:
+                toeplitz[i, j] = 2.0  # Main diagonal
+            else:
+                # Use reciprocal of absolute diagonal index with alternating signs
+                toeplitz[i, j] = ((-1) ** abs(diagonal_index)) / (1 + abs(diagonal_index))
+    
+    return toeplitz
+
+# Create an 8x8 Toeplitz matrix
+A7 = create_toeplitz_matrix(8)
+
 # Run the examples
 if __name__ == "__main__":
+    # Set up command line argument parsing
+    parser = argparse.ArgumentParser(description="Run LU decomposition examples")
+    parser.add_argument("-i", "--interactive", action="store_true", 
+                        help="Run in interactive mode with step-by-step visualization")
+    args = parser.parse_args()
+    
     print("LU DECOMPOSITION WITH PIVOTING EXAMPLES")
     print("=======================================")
     
-    run_example(A1, "Simple 2x2 Matrix")
+    # Use the command-line flag to set interactive mode
+    interactive_mode = args.interactive
     
-    print("\nPress Enter to continue to the next example...")
-    input()
+    if interactive_mode:
+        print("Running in INTERACTIVE mode. You will be prompted at each step.")
+    else:
+        print("Running in non-interactive mode. Only final results will be shown.")
     
-    run_example(A2, "Matrix Requiring Pivoting")
+    run_example(A1, "Simple 2x2 Matrix", interactive=interactive_mode)
     
-    print("\nPress Enter to continue to the next example...")
-    input()
+    if interactive_mode:
+        print("\nPress Enter to continue to the next example...")
+        input()
     
-    run_example(A3, "Hilbert Matrix (Ill-Conditioned)")
+    run_example(A2, "Matrix Requiring Pivoting", interactive=interactive_mode)
     
-    print("\nPress Enter to continue to the next example...")
-    input()
+    if interactive_mode:
+        print("\nPress Enter to continue to the next example...")
+        input()
     
-    run_example(A4, "Block Matrix with Zeros")
+    run_example(A3, "Hilbert Matrix (Ill-Conditioned)", interactive=interactive_mode)
     
-    print("\nPress Enter to continue to the next example...")
-    input()
+    if interactive_mode:
+        print("\nPress Enter to continue to the next example...")
+        input()
     
-    run_example(A5, "Tridiagonal Matrix")
+    run_example(A4, "Block Matrix with Zeros", interactive=interactive_mode)
+    
+    if interactive_mode:
+        print("\nPress Enter to continue to the next example...")
+        input()
+    
+    run_example(A5, "Tridiagonal Matrix", interactive=interactive_mode)
+    
+    if interactive_mode:
+        print("\nPress Enter to continue to the next example...")
+        input()
+    
+    # Add the large matrix example with display off to avoid flooding the console
+    # We'll only show the final results since the matrix is very large
+    run_example(A6, "Large Banded Matrix (50×50)", display=False, interactive=False)
+    
+    if interactive_mode:
+        print("\nPress Enter to continue to the next example...")
+        input()
+    
+    # Add the Toeplitz matrix example
+    run_example(A7, "Toeplitz Matrix", interactive=interactive_mode)
     
     print("\nAll examples completed. Here's what we've learned:")
     print("1. Simple Matrix: Straightforward decomposition without pivoting needed.")
@@ -133,3 +234,5 @@ if __name__ == "__main__":
     print("3. Hilbert Matrix: Showed how LU decomposition handles ill-conditioned matrices.")
     print("4. Block Matrix: Revealed how zero patterns affect pivoting strategy.")
     print("5. Tridiagonal Matrix: Common in numerical methods for differential equations.")
+    print("6. Large Banded Matrix: Demonstrated performance on larger systems.")
+    print("7. Toeplitz Matrix: Illustrated decomposition of matrices with constant diagonals.")
