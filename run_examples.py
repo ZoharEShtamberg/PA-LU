@@ -4,12 +4,39 @@ from LU import lu_piv, verify_decomposition
 
 def print_matrix(matrix, name, precision=4):
     """Print a matrix with a given name and precision."""
+    # For large matrices, print a condensed preview instead
+    if min(matrix.shape) > 15:
+        print_large_matrix_preview(matrix, name, precision)
+        return
+        
     print(f"{name}:")
     for row in matrix:
         print("[", end=" ")
         for val in row:
             print(f"{val:{precision+6}.{precision}f}", end=" ")
         print("]")
+    print()
+
+def print_large_matrix_preview(matrix, name, precision=4):
+    """Print a condensed preview of a large matrix."""
+    rows, cols = matrix.shape
+    print(f"{name} (size {rows}×{cols}, showing corner preview):")
+    
+    # Display the top-left 3x3 corner
+    corner_size = min(3, rows, cols)
+    print("Top-left corner:")
+    for i in range(corner_size):
+        print("[", end=" ")
+        for j in range(corner_size):
+            print(f"{matrix[i,j]:{precision+6}.{precision}f}", end=" ")
+        if cols > corner_size:
+            print("... ", end="")
+        print("]")
+    if rows > corner_size:
+        print("[", " "*5, "...", " "*5, "]")
+    
+    # Add some basic statistics
+    print(f"Matrix statistics: min={np.min(matrix):.4f}, max={np.max(matrix):.4f}, mean={np.mean(matrix):.4f}")
     print()
 
 def print_step_matrices(L, U, P, A, step):
@@ -271,9 +298,7 @@ if __name__ == "__main__":
             print("\nPress Enter to continue to the next example...")
             input()
         
-        # Add the large matrix example with display off to avoid flooding the console
-        # We'll only show the final results since the matrix is very large
-        run_example(A6, "Large Banded Matrix (50×50)", display=False, interactive=False)
+        run_example(A6, "Large Banded Matrix (50×50)", display=True, interactive=False)
         
         if interactive_mode:
             print("\nPress Enter to continue to the next example...")
