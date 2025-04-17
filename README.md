@@ -29,11 +29,45 @@ Run the examples with:
 python run_examples.py
 ```
 
-For interactive mode with step-by-step visualization:
+### Command Line Options
 
-```bash
-python run_examples.py -i
-```
+The script supports several command line options:
+
+- **Interactive Mode**:
+  ```bash
+  python run_examples.py -i
+  ```
+  or
+  ```bash
+  python run_examples.py --interactive
+  ```
+  This mode provides step-by-step visualization of the LU decomposition process with pauses after each step.
+
+- **Include a Large Random Matrix**:
+  ```bash
+  python run_examples.py -l 100
+  ```
+  or
+  ```bash
+  python run_examples.py --large-matrix 100
+  ```
+  Runs all standard examples plus an additional example with a large random matrix of size N×N (100×100 in this example).
+
+- **Run Only the Large Matrix Example**:
+  ```bash
+  python run_examples.py -o 200
+  ```
+  or
+  ```bash
+  python run_examples.py --only-large-matrix 200
+  ```
+  Skips all standard examples and only runs the large random matrix example of size N×N (200×200 in this example).
+
+- **Combine Options**:
+  ```bash
+  python run_examples.py -i -l 150
+  ```
+  Run in interactive mode and include a 150×150 random matrix example.
 
 The interactive mode (`-i` flag) provides:
 - Step-by-step visualization of the LU decomposition process
@@ -54,5 +88,6 @@ The repository includes examples demonstrating LU decomposition on various matri
 5. **Tridiagonal Matrix**: Common in numerical methods for differential equations
 6. **Large Banded Matrix**: Demonstrates performance on larger systems (50×50)
 7. **Toeplitz Matrix**: Illustrates decomposition of matrices with constant diagonals
+8. **Large Random Matrix**: Tests the algorithm on a large randomly generated matrix
 
 Each example verifies the decomposition by computing the error between PA and LU.

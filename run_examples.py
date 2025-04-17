@@ -71,6 +71,34 @@ def run_example(A, name="Example", display=True, interactive=False):
     
     return P, L, U
 
+def run_large_example(A, name="Large Example"):
+    """Run LU decomposition on a large matrix but only print the error norm.
+    
+    For very large matrices, printing the full matrices is impractical and
+    overwhelming. This function only prints the verification error.
+    
+    Args:
+        A: Input matrix
+        name: Example name
+    
+    Returns:
+        P, L, U: The decomposition matrices
+    """
+    print(f"\n{'#'*60}")
+    print(f"# {name}")
+    print(f"{'#'*60}")
+    
+    print(f"Matrix size: {A.shape[0]}×{A.shape[1]}")
+    
+    # Run LU decomposition without displaying intermediate steps
+    P, L, U = lu_piv(A, disp=0)
+    
+    # Only print verification error
+    error = verify_decomposition(A, P, L, U)
+    print(f"Verification: ||P*A - L*U|| = {error:.2e}")
+    
+    return P, L, U
+
 # Example 1: Simple matrix that won't need pivoting
 A1 = np.array([
     [4.0, 3.0],
@@ -168,12 +196,33 @@ def create_toeplitz_matrix(n):
 # Create an 8x8 Toeplitz matrix
 A7 = create_toeplitz_matrix(8)
 
+# Example 8: Very large random matrix - testing performance with extremely large systems
+def create_large_random_matrix(n, seed=42):
+    """Create a large n×n matrix with random values.
+    
+    This is useful for performance testing and demonstrating how LU decomposition
+    scales with very large matrices.
+    
+    Args:
+        n: Size of the matrix
+        seed: Random seed for reproducibility
+    
+    Returns:
+        A random n×n matrix
+    """
+    np.random.seed(seed)  # For reproducibility
+    return np.random.rand(n, n)
+
 # Run the examples
 if __name__ == "__main__":
     # Set up command line argument parsing
     parser = argparse.ArgumentParser(description="Run LU decomposition examples")
     parser.add_argument("-i", "--interactive", action="store_true", 
                         help="Run in interactive mode with step-by-step visualization")
+    parser.add_argument("-l", "--large-matrix", type=int, metavar="N", 
+                        help="Run an additional example with a large random N×N matrix")
+    parser.add_argument("-o", "--only-large-matrix", type=int, metavar="N", 
+                        help="Only run the large random N×N matrix example")
     args = parser.parse_args()
     
     print("LU DECOMPOSITION WITH PIVOTING EXAMPLES")
@@ -182,57 +231,77 @@ if __name__ == "__main__":
     # Use the command-line flag to set interactive mode
     interactive_mode = args.interactive
     
+    # Determine if we're running only the large matrix example
+    only_large_matrix = args.only_large_matrix is not None
+    
     if interactive_mode:
         print("Running in INTERACTIVE mode. You will be prompted at each step.")
     else:
         print("Running in non-interactive mode. Only final results will be shown.")
     
-    run_example(A1, "Simple 2x2 Matrix", interactive=interactive_mode)
+    # Run standard examples if not in only-large-matrix mode
+    if not only_large_matrix:
+        run_example(A1, "Simple 2x2 Matrix", interactive=interactive_mode)
+        
+        if interactive_mode:
+            print("\nPress Enter to continue to the next example...")
+            input()
+        
+        run_example(A2, "Matrix Requiring Pivoting", interactive=interactive_mode)
+        
+        if interactive_mode:
+            print("\nPress Enter to continue to the next example...")
+            input()
+        
+        run_example(A3, "Hilbert Matrix (Ill-Conditioned)", interactive=interactive_mode)
+        
+        if interactive_mode:
+            print("\nPress Enter to continue to the next example...")
+            input()
+        
+        run_example(A4, "Block Matrix with Zeros", interactive=interactive_mode)
+        
+        if interactive_mode:
+            print("\nPress Enter to continue to the next example...")
+            input()
+        
+        run_example(A5, "Tridiagonal Matrix", interactive=interactive_mode)
+        
+        if interactive_mode:
+            print("\nPress Enter to continue to the next example...")
+            input()
+        
+        # Add the large matrix example with display off to avoid flooding the console
+        # We'll only show the final results since the matrix is very large
+        run_example(A6, "Large Banded Matrix (50×50)", display=False, interactive=False)
+        
+        if interactive_mode:
+            print("\nPress Enter to continue to the next example...")
+            input()
+        
+        # Add the Toeplitz matrix example
+        run_example(A7, "Toeplitz Matrix", interactive=interactive_mode)
+        
+        if interactive_mode and (args.large_matrix or args.only_large_matrix):
+            print("\nPress Enter to continue to the large matrix example...")
+            input()
+
+    # Run the large random matrix example if specified
+    large_matrix_size = args.large_matrix or args.only_large_matrix
+    if large_matrix_size:
+        print(f"\nNow running LU decomposition on a {large_matrix_size}×{large_matrix_size} random matrix...")
+        print("This may take some time.")
+        large_random_matrix = create_large_random_matrix(large_matrix_size)
+        run_large_example(large_random_matrix, f"Large Random Matrix ({large_matrix_size}×{large_matrix_size})")
     
-    if interactive_mode:
-        print("\nPress Enter to continue to the next example...")
-        input()
-    
-    run_example(A2, "Matrix Requiring Pivoting", interactive=interactive_mode)
-    
-    if interactive_mode:
-        print("\nPress Enter to continue to the next example...")
-        input()
-    
-    run_example(A3, "Hilbert Matrix (Ill-Conditioned)", interactive=interactive_mode)
-    
-    if interactive_mode:
-        print("\nPress Enter to continue to the next example...")
-        input()
-    
-    run_example(A4, "Block Matrix with Zeros", interactive=interactive_mode)
-    
-    if interactive_mode:
-        print("\nPress Enter to continue to the next example...")
-        input()
-    
-    run_example(A5, "Tridiagonal Matrix", interactive=interactive_mode)
-    
-    if interactive_mode:
-        print("\nPress Enter to continue to the next example...")
-        input()
-    
-    # Add the large matrix example with display off to avoid flooding the console
-    # We'll only show the final results since the matrix is very large
-    run_example(A6, "Large Banded Matrix (50×50)", display=False, interactive=False)
-    
-    if interactive_mode:
-        print("\nPress Enter to continue to the next example...")
-        input()
-    
-    # Add the Toeplitz matrix example
-    run_example(A7, "Toeplitz Matrix", interactive=interactive_mode)
-    
-    print("\nAll examples completed. Here's what we've learned:")
-    print("1. Simple Matrix: Straightforward decomposition without pivoting needed.")
-    print("2. Matrix with Pivoting: Demonstrated how pivoting improves numerical stability.")
-    print("3. Hilbert Matrix: Showed how LU decomposition handles ill-conditioned matrices.")
-    print("4. Block Matrix: Revealed how zero patterns affect pivoting strategy.")
-    print("5. Tridiagonal Matrix: Common in numerical methods for differential equations.")
-    print("6. Large Banded Matrix: Demonstrated performance on larger systems.")
-    print("7. Toeplitz Matrix: Illustrated decomposition of matrices with constant diagonals.")
+    if not only_large_matrix:
+        print("\nAll examples completed. Here's what we've learned:")
+        print("1. Simple Matrix: Straightforward decomposition without pivoting needed.")
+        print("2. Matrix with Pivoting: Demonstrated how pivoting improves numerical stability.")
+        print("3. Hilbert Matrix: Showed how LU decomposition handles ill-conditioned matrices.")
+        print("4. Block Matrix: Revealed how zero patterns affect pivoting strategy.")
+        print("5. Tridiagonal Matrix: Common in numerical methods for differential equations.")
+        print("6. Large Banded Matrix: Demonstrated performance on larger systems.")
+        print("7. Toeplitz Matrix: Illustrated decomposition of matrices with constant diagonals.")
+        if large_matrix_size:
+            print(f"8. Large Random Matrix: Showed scaling behavior with extremely large systems ({large_matrix_size}×{large_matrix_size}).")
