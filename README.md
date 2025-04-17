@@ -1,4 +1,4 @@
-vibe coded this for educational purposes
+# vibe coded this for educational purposes
 
 # LU Decomposition with Pivoting
 
