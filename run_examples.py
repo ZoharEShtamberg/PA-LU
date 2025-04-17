@@ -252,8 +252,6 @@ if __name__ == "__main__":
                         help="Only run the large random N×N matrix example")
     args = parser.parse_args()
     
-    print("LU DECOMPOSITION WITH PIVOTING EXAMPLES")
-    print("=======================================")
     
     # Use the command-line flag to set interactive mode
     interactive_mode = args.interactive
@@ -263,8 +261,6 @@ if __name__ == "__main__":
     
     if interactive_mode:
         print("Running in INTERACTIVE mode. You will be prompted at each step.")
-    else:
-        print("Running in non-interactive mode. Only final results will be shown.")
     
     # Run standard examples if not in only-large-matrix mode
     if not only_large_matrix:
