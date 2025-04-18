@@ -99,18 +99,7 @@ def run_example(A, name="Example", display=True, interactive=False):
     return P, L, U
 
 def run_large_example(A, name="Large Example"):
-    """Run LU decomposition on a large matrix but only print the error norm.
-    
-    For very large matrices, printing the full matrices is impractical and
-    overwhelming. This function only prints the verification error.
-    
-    Args:
-        A: Input matrix
-        name: Example name
-    
-    Returns:
-        P, L, U: The decomposition matrices
-    """
+    """Run LU decomposition on a large matrix but only print the error norm."""
     print(f"\n{'#'*60}")
     print(f"# {name}")
     print(f"{'#'*60}")
@@ -126,59 +115,28 @@ def run_large_example(A, name="Large Example"):
     
     return P, L, U
 
-# Example 1: Simple matrix that won't need pivoting
-A1 = np.array([
-    [4.0, 3.0],
-    [6.0, 3.0]
-])
-
-# Example 2: Matrix that requires pivoting for stability
-A2 = np.array([
-    [0.1, 7.0, 2.0],
-    [3.0, 4.0, 5.0],
-    [8.0, 1.0, 6.0]
-])
-
-# Example 3: Hilbert matrix (notoriously ill-conditioned)
+# Matrix generation functions
 def hilbert_matrix(n):
     """Create a Hilbert matrix of size n×n."""
-    # Hilbert matrices have elements H[i,j] = 1/(i+j+1)
-    # They are famous for being extremely ill-conditioned
     H = np.zeros((n, n))
     for i in range(n):
         for j in range(n):
             H[i, j] = 1 / (i + j + 1)
     return H
 
-A3 = hilbert_matrix(4)  # Using smaller size for readability
+def create_tridiagonal_matrix(n):
+    """Create a tridiagonal matrix."""
+    A = np.zeros((n, n))
+    for i in range(n):
+        A[i, i] = 2
+        if i > 0:
+            A[i, i-1] = -1
+        if i < n-1:
+            A[i, i+1] = -1
+    return A
 
-# Example 4: Block matrix with zeros - challenges pivoting
-A4 = np.array([
-    [0.0, 0.0, 2.0, 1.0],
-    [0.0, 0.0, 1.0, 2.0],
-    [3.0, 1.0, 0.0, 0.0],
-    [1.0, 4.0, 0.0, 0.0]
-])
-
-# Example 5: Tridiagonal matrix - common in differential equations
-n = 5  # Using smaller size for readability
-# Creating a tridiagonal matrix with 2 on main diagonal and -1 on sub/super diagonals
-# This structure arises when discretizing certain differential equations
-A5 = np.zeros((n, n))
-for i in range(n):
-    A5[i, i] = 2
-    if i > 0:
-        A5[i, i-1] = -1
-    if i < n-1:
-        A5[i, i+1] = -1
-
-# Example 6: A large banded matrix - testing performance with bigger matrices
 def create_large_banded_matrix(n, bandwidth=5):
-    """Create a large banded matrix with the given bandwidth.
-    
-    Creates an n×n matrix with non-zero elements within a band around the diagonal.
-    The matrix has interesting values that ensure it's not singular.
-    """
+    """Create a large banded matrix with the given bandwidth."""
     large_matrix = np.zeros((n, n))
     for i in range(n):
         large_matrix[i, i] = 4.0  # Main diagonal
@@ -195,74 +153,97 @@ def create_large_banded_matrix(n, bandwidth=5):
                 
     return large_matrix
 
-# Create a 50x50 matrix with bandwidth 5
-A6 = create_large_banded_matrix(50, bandwidth=5)
-
-# Example 7: Toeplitz matrix - matrices with constant diagonals
 def create_toeplitz_matrix(n):
-    """Create a Toeplitz matrix of size n×n.
-    
-    A Toeplitz matrix has constant values along all diagonals.
-    These matrices arise in signal processing and differential equations.
-    """
+    """Create a Toeplitz matrix of size n×n."""
     toeplitz = np.zeros((n, n))
     
-    # Fill the matrix with values that depend only on the difference i-j
     for i in range(n):
         for j in range(n):
-            # Main diagonal is 2, and values decrease as we move away
             diagonal_index = i - j
             if diagonal_index == 0:
                 toeplitz[i, j] = 2.0  # Main diagonal
             else:
-                # Use reciprocal of absolute diagonal index with alternating signs
                 toeplitz[i, j] = ((-1) ** abs(diagonal_index)) / (1 + abs(diagonal_index))
     
     return toeplitz
 
-# Create an 8x8 Toeplitz matrix
-A7 = create_toeplitz_matrix(8)
-
-# Example 8: Singular matrix - matrix with no inverse (det = 0)
 def create_singular_matrix(n=4):
-    """Create a singular n×n matrix.
-    
-    A singular matrix has determinant zero and no inverse.
-    In this case, we create a matrix where one row is a linear combination of others.
-    """
-    # Start with an identity matrix
+    """Create a singular n×n matrix."""
     singular = np.eye(n)
     
     # Make the last row a linear combination of the other rows
-    # This guarantees the matrix will be singular
     singular[-1, :] = 0
     for i in range(n-1):
         singular[-1, :] += singular[i, :] * (i + 1) / (n - 1)
     
     return singular
 
-# Create a 4x4 singular matrix
-A8 = create_singular_matrix(4)
-
-# Example 9: Very large random matrix - testing performance with extremely large systems
 def create_large_random_matrix(n, seed=42):
-    """Create a large n×n matrix with random values.
-    
-    This is useful for performance testing and demonstrating how LU decomposition
-    scales with very large matrices.
-    
-    Args:
-        n: Size of the matrix
-        seed: Random seed for reproducibility
-    
-    Returns:
-        A random n×n matrix
-    """
+    """Create a large n×n matrix with random values."""
     np.random.seed(seed)  # For reproducibility
     return np.random.rand(n, n)
 
-# Run the examples
-if __name__ == "__main__":
+def define_examples():
+    """Define all the example matrices."""
+    examples = [
+        {
+            "matrix": np.array([
+                [4.0, 3.0],
+                [6.0, 3.0]
+            ]),
+            "name": "Simple 2x2 Matrix",
+            "description": "Straightforward decomposition without pivoting needed."
+        },
+        {
+            "matrix": np.array([
+                [0.1, 7.0, 2.0],
+                [3.0, 4.0, 5.0],
+                [8.0, 1.0, 6.0]
+            ]),
+            "name": "Matrix Requiring Pivoting",
+            "description": "Demonstrates how pivoting improves numerical stability."
+        },
+        {
+            "matrix": hilbert_matrix(4),
+            "name": "Hilbert Matrix (Ill-Conditioned)",
+            "description": "Shows how LU decomposition handles ill-conditioned matrices."
+        },
+        {
+            "matrix": np.array([
+                [0.0, 0.0, 2.0, 1.0],
+                [0.0, 0.0, 1.0, 2.0],
+                [3.0, 1.0, 0.0, 0.0],
+                [1.0, 4.0, 0.0, 0.0]
+            ]),
+            "name": "Block Matrix with Zeros",
+            "description": "Reveals how zero patterns affect pivoting strategy."
+        },
+        {
+            "matrix": create_tridiagonal_matrix(5),
+            "name": "Tridiagonal Matrix",
+            "description": "Common in numerical methods for differential equations."
+        },
+        {
+            "matrix": create_large_banded_matrix(50, bandwidth=5),
+            "name": "Large Banded Matrix (50×50)",
+            "description": "Demonstrates performance on larger systems.",
+            "display_steps": False
+        },
+        {
+            "matrix": create_toeplitz_matrix(8),
+            "name": "Toeplitz Matrix",
+            "description": "Illustrates decomposition of matrices with constant diagonals."
+        },
+        {
+            "matrix": create_singular_matrix(4),
+            "name": "Singular Matrix",
+            "description": "Shows how decomposition behaves with non-invertible matrices."
+        }
+    ]
+    return examples
+
+def main():
+    """Main function to run the LU decomposition examples."""
     # Set up command line argument parsing
     parser = argparse.ArgumentParser(description="Run LU decomposition examples")
     parser.add_argument("-i", "--interactive", action="store_true", 
@@ -273,68 +254,34 @@ if __name__ == "__main__":
                         help="Only run the large random N×N matrix example")
     args = parser.parse_args()
     
-    
-    # Use the command-line flag to set interactive mode
     interactive_mode = args.interactive
-    
-    # Determine if we're running only the large matrix example
     only_large_matrix = args.only_large_matrix is not None
     
     if interactive_mode:
         print("Running in INTERACTIVE mode. You will be prompted at each step.")
     
+    # Get the list of examples
+    examples = define_examples()
+    
     # Run standard examples if not in only-large-matrix mode
     if not only_large_matrix:
-        run_example(A1, "Simple 2x2 Matrix", interactive=interactive_mode)
-        
-        if interactive_mode:
-            print("\nPress Enter to continue to the next example...")
-            input()
-        
-        run_example(A2, "Matrix Requiring Pivoting", interactive=interactive_mode)
-        
-        if interactive_mode:
-            print("\nPress Enter to continue to the next example...")
-            input()
-        
-        run_example(A3, "Hilbert Matrix (Ill-Conditioned)", interactive=interactive_mode)
-        
-        if interactive_mode:
-            print("\nPress Enter to continue to the next example...")
-            input()
-        
-        run_example(A4, "Block Matrix with Zeros", interactive=interactive_mode)
-        
-        if interactive_mode:
-            print("\nPress Enter to continue to the next example...")
-            input()
-        
-        run_example(A5, "Tridiagonal Matrix", interactive=interactive_mode)
-        
-        if interactive_mode:
-            print("\nPress Enter to continue to the next example...")
-            input()
-        
-        run_example(A6, "Large Banded Matrix (50×50)", display=True, interactive=False)
-        
-        if interactive_mode:
-            print("\nPress Enter to continue to the next example...")
-            input()
-        
-        # Add the Toeplitz matrix example
-        run_example(A7, "Toeplitz Matrix", interactive=interactive_mode)
-        
-        if interactive_mode:
-            print("\nPress Enter to continue to the next example...")
-            input()
+        for i, example in enumerate(examples):
+            # Get the display setting, default to True
+            display_steps = example.get("display_steps", True)
             
-        # Add the singular matrix example
-        run_example(A8, "Singular Matrix", interactive=interactive_mode)
-        
-        if interactive_mode and (args.large_matrix or args.only_large_matrix):
-            print("\nPress Enter to continue to the large matrix example...")
-            input()
-
+            # Run this example
+            run_example(
+                example["matrix"],
+                example["name"],
+                display=display_steps,
+                interactive=interactive_mode
+            )
+            
+            # Prompt to continue if not the last example and in interactive mode
+            if interactive_mode and (i < len(examples) - 1 or args.large_matrix):
+                print("\nPress Enter to continue to the next example...")
+                input()
+    
     # Run the large random matrix example if specified
     large_matrix_size = args.large_matrix or args.only_large_matrix
     if large_matrix_size:
@@ -343,15 +290,14 @@ if __name__ == "__main__":
         large_random_matrix = create_large_random_matrix(large_matrix_size)
         run_large_example(large_random_matrix, f"Large Random Matrix ({large_matrix_size}×{large_matrix_size})")
     
+    # Print summary of what we've learned
     if not only_large_matrix:
         print("\nAll examples completed. Here's what we've learned:")
-        print("1. Simple Matrix: Straightforward decomposition without pivoting needed.")
-        print("2. Matrix with Pivoting: Demonstrated how pivoting improves numerical stability.")
-        print("3. Hilbert Matrix: Showed how LU decomposition handles ill-conditioned matrices.")
-        print("4. Block Matrix: Revealed how zero patterns affect pivoting strategy.")
-        print("5. Tridiagonal Matrix: Common in numerical methods for differential equations.")
-        print("6. Large Banded Matrix: Demonstrated performance on larger systems.")
-        print("7. Toeplitz Matrix: Illustrated decomposition of matrices with constant diagonals.")
-        print("8. Singular Matrix: Showed how decomposition behaves with non-invertible matrices.")
+        for i, example in enumerate(examples):
+            print(f"{i+1}. {example['name']}: {example['description']}")
+        
         if large_matrix_size:
-            print(f"9. Large Random Matrix: Showed scaling behavior with extremely large systems ({large_matrix_size}×{large_matrix_size}).")
+            print(f"{len(examples)+1}. Large Random Matrix: Showed scaling behavior with extremely large systems ({large_matrix_size}×{large_matrix_size}).")
+
+if __name__ == "__main__":
+    main()
