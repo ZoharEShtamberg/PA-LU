@@ -223,7 +223,28 @@ def create_toeplitz_matrix(n):
 # Create an 8x8 Toeplitz matrix
 A7 = create_toeplitz_matrix(8)
 
-# Example 8: Very large random matrix - testing performance with extremely large systems
+# Example 8: Singular matrix - matrix with no inverse (det = 0)
+def create_singular_matrix(n=4):
+    """Create a singular n×n matrix.
+    
+    A singular matrix has determinant zero and no inverse.
+    In this case, we create a matrix where one row is a linear combination of others.
+    """
+    # Start with an identity matrix
+    singular = np.eye(n)
+    
+    # Make the last row a linear combination of the other rows
+    # This guarantees the matrix will be singular
+    singular[-1, :] = 0
+    for i in range(n-1):
+        singular[-1, :] += singular[i, :] * (i + 1) / (n - 1)
+    
+    return singular
+
+# Create a 4x4 singular matrix
+A8 = create_singular_matrix(4)
+
+# Example 9: Very large random matrix - testing performance with extremely large systems
 def create_large_random_matrix(n, seed=42):
     """Create a large n×n matrix with random values.
     
@@ -303,6 +324,13 @@ if __name__ == "__main__":
         # Add the Toeplitz matrix example
         run_example(A7, "Toeplitz Matrix", interactive=interactive_mode)
         
+        if interactive_mode:
+            print("\nPress Enter to continue to the next example...")
+            input()
+            
+        # Add the singular matrix example
+        run_example(A8, "Singular Matrix", interactive=interactive_mode)
+        
         if interactive_mode and (args.large_matrix or args.only_large_matrix):
             print("\nPress Enter to continue to the large matrix example...")
             input()
@@ -324,5 +352,6 @@ if __name__ == "__main__":
         print("5. Tridiagonal Matrix: Common in numerical methods for differential equations.")
         print("6. Large Banded Matrix: Demonstrated performance on larger systems.")
         print("7. Toeplitz Matrix: Illustrated decomposition of matrices with constant diagonals.")
+        print("8. Singular Matrix: Showed how decomposition behaves with non-invertible matrices.")
         if large_matrix_size:
-            print(f"8. Large Random Matrix: Showed scaling behavior with extremely large systems ({large_matrix_size}×{large_matrix_size}).")
+            print(f"9. Large Random Matrix: Showed scaling behavior with extremely large systems ({large_matrix_size}×{large_matrix_size}).")

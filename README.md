@@ -117,6 +117,7 @@ The repository includes examples demonstrating LU decomposition on various matri
 5. **Tridiagonal Matrix**: Common in numerical methods for differential equations
 6. **Large Banded Matrix**: Demonstrates performance on larger systems (50×50)
 7. **Toeplitz Matrix**: Illustrates decomposition of matrices with constant diagonals
-8. **Large Random Matrix**: Tests the algorithm on a large randomly generated matrix
+8. **Singular Matrix**: Shows how decomposition behaves with non-invertible matrices
+9. **Large Random Matrix**: Tests the algorithm on a large randomly generated matrix
 
 Each example verifies the decomposition by computing the error between PA and LU.
